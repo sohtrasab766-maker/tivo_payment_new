@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TiVo Payment Page Preview</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --site-primary: #173f8a;
+  --site-secondary: #e8efff;
+  --site-background: #f3f6fc;
+  --site-on-primary: #ffffff;
+  --site-on-secondary: #17345f;
+  --site-on-background: #17243a;
+  --site-font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --site-font-heading: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --site-heading-scale: 1;
+  --site-spacing-scale: 1;
+  --site-radius-scale: 1;
+  --site-decoration-opacity: 1;
+  --surface: light-dark(#ffffff, #1b2432);
+  --soft: light-dark(#f7f9fd, #222e40);
+  --ink: light-dark(#17243a, #f0f4fb);
+  --muted: light-dark(#68768b, #a8b4c6);
+  --line: light-dark(#dce4f0, #39475b);
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: var(--site-font-body); background: var(--site-background); color: var(--site-on-background); }
+#app { min-height: 100vh; width: 100%; background-color: var(--site-background); color: var(--site-on-background); border-radius: 0; padding: calc(28px * var(--site-spacing-scale)) 16px 42px; }
+.shell { width: min(100%, 520px); margin: 0 auto; }
+.topline { display:flex; align-items:center; justify-content:space-between; margin: 0 2px 18px; }
+.brand { display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.2px; font-size:20px; color:var(--ink); }
+.logo { width:34px; height:34px; border-radius:11px; background:var(--site-primary); color:white; display:grid; place-items:center; font-weight:900; }
+.preview-tag { font-size:11px; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:6px 9px; }
+.card { background:var(--surface); border:1px solid var(--line); border-radius:calc(22px * var(--site-radius-scale)); padding:calc(22px * var(--site-spacing-scale)); box-shadow:0 12px 35px rgba(20,45,85,.07); }
+h1 { font-family:var(--site-font-heading); font-size:calc(25px * var(--site-heading-scale)); line-height:1.2; margin:0 0 7px; color:var(--ink); }
+.sub { margin:0 0 20px; color:var(--muted); font-size:14px; }
+.auto-row { display:flex; justify-content:space-between; align-items:center; gap:16px; background:var(--soft); border:1px solid var(--line); border-radius:15px; padding:15px; margin-bottom:22px; }
+.auto-title { font-weight:750; color:var(--ink); }
+.auto-hint { font-size:12px; color:var(--muted); margin-top:3px; }
+.switch { position:relative; display:inline-block; width:54px; height:30px; flex:0 0 auto; }
+.switch input { opacity:0; width:0; height:0; }
+.track { position:absolute; inset:0; cursor:pointer; border-radius:999px; background:#9aa6b7; transition:.2s; }
+.track:before { content:""; position:absolute; width:22px; height:22px; left:4px; top:4px; border-radius:50%; background:white; transition:.2s; box-shadow:0 1px 4px #0003; }
+.switch input:checked + .track { background:#178653; }
+.switch input:checked + .track:before { transform:translateX(24px); }
+.switch input:focus-visible + .track { outline:3px solid #7aa7ff; outline-offset:3px; }
+.state { min-width:36px; font-size:11px; font-weight:800; color:var(--muted); text-align:right; }
+.amount-box { text-align:center; padding:18px 10px 20px; border-bottom:1px solid var(--line); }
+.amount-label { color:var(--muted); font-size:13px; }
+.amount { color:var(--ink); font-size:38px; font-weight:850; letter-spacing:-1.3px; margin-top:5px; }
+.details { padding:17px 0 5px; display:grid; gap:13px; }
+.detail { display:flex; justify-content:space-between; gap:12px; font-size:13px; }
+.detail span:first-child { color:var(--muted); }
+.detail strong { color:var(--ink); text-align:right; overflow-wrap:anywhere; }
+.copy { border:0; background:var(--site-secondary); color:var(--site-on-secondary); padding:6px 10px; border-radius:8px; font-weight:700; font-size:11px; cursor:pointer; margin-left:6px; }
+.pay { width:100%; margin-top:20px; border:0; border-radius:13px; background:var(--site-primary); color:var(--site-on-primary); padding:15px 18px; font-size:15px; font-weight:800; cursor:pointer; }
+ .pay:active { transform:translateY(1px); }
+.payment-options { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:12px; }
+.payment-option { min-height:58px; border:1px solid transparent; border-radius:12px; padding:10px 6px; font-size:13px; font-weight:800; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,.10); }
+.payment-option[data-package="net.one97.paytm"] { background-color:#00baf2; color:#ffffff; }
+.payment-option[data-package="com.phonepe.app"] { background-color:#5f259f; color:#ffffff; }
+.payment-option[data-package="com.google.android.apps.nbu.paisa.user"] { background-color:#ffffff; color:#202124; border:1px solid #dadce0; }
+.payment-option:active { transform:translateY(1px); }
+.payment-option span { display:block; font-size:11px; font-weight:600; color:var(--muted); margin-top:3px; }
+@media (max-width:360px) { .payment-options { gap:6px; } .payment-option { font-size:11px; } }
+.note { font-size:11px; line-height:1.55; color:var(--muted); margin:15px 2px 0; text-align:center; }
+.notice { margin-top:15px; padding:11px 13px; border-radius:11px; background:var(--soft); color:var(--muted); font-size:12px; line-height:1.5; }
+#toast { min-height:18px; text-align:center; color:#178653; font-size:12px; font-weight:700; margin-top:9px; }
+#utrMessage { margin:10px 0 0; padding:11px 12px; border-radius:10px; font-size:13px; line-height:1.45; }
+#utrMessage.success { color:#166534; background:#dcfce7; border:1px solid #86efac; font-weight:750; }
+#utrMessage.error { color:#991b1b; background:#fee2e2; border:1px solid #fca5a5; }
+.field { display:grid; gap:6px; margin-top:12px; color:var(--muted); font-size:12px; font-weight:650; }
+.field input { width:100%; border:1px solid var(--line); border-radius:10px; padding:12px; background:var(--soft); color:var(--ink); font:inherit; font-size:14px; }
+.section-title { margin:20px 0 4px; color:var(--ink); font-size:15px; font-weight:800; }
+.secondary-button { width:100%; margin-top:12px; border:1px solid var(--line); border-radius:11px; background:var(--soft); color:var(--ink); padding:12px; font-size:13px; font-weight:750; cursor:pointer; }
+.editor { margin-top:18px; padding-top:16px; border-top:1px solid var(--line); }
+.small-note { margin:8px 0 0; color:var(--muted); font-size:11px; line-height:1.5; }
+@media (max-width:380px) { .card { padding:17px; } .amount { font-size:34px; } }
+#utrSuccessScreen {
+  display:none; min-height:100vh; width:100%; box-sizing:border-box;
+  align-items:center; justify-content:center; flex-direction:column;
+  text-align:center; padding:28px; background:#f0fdf4; color:#14532d;
+}
+#utrSuccessScreen .success-icon {
+  width:104px; height:104px; border-radius:50%; background:#16a34a;
+  color:white; display:flex; align-items:center; justify-content:center;
+  font-size:62px; font-weight:800; margin-bottom:24px;
+  box-shadow:0 10px 30px rgba(22,163,74,.22);
+}
+#utrSuccessScreen h1 { font-size:clamp(32px,8vw,48px); line-height:1.1; margin:0; }
+#utrSuccessScreen p { font-size:17px; margin-top:14px; color:#166534; }
+</style>
+</head>
+<body>
+<main id="app">
+  <div class="shell">
+    <div class="topline">
+      <div class="brand"><div class="logo">T</div><span>TiVo app</span></div>
+      <span class="preview-tag">Payment page preview</span>
+    </div>
+    <section class="card" aria-label="Payment details">
+      <h1>Loan Repayment</h1>
+      <p class="sub">Review the payment details before continuing.</p>
+      <div class="auto-row">
+        <div>
+          <div class="auto-title">Auto Loan</div>
+          <div class="auto-hint" id="autoHint">Auto Loan option is OFF</div>
+        </div>
+        <label class="switch" aria-label="Toggle Auto Loan">
+          <input id="autoLoan" type="checkbox" aria-label="Auto Loan on or off">
+          <span class="track"></span>
+        </label>
+        <span class="state" id="stateText">OFF</span>
+      </div>
+      <div class="amount-box">
+        <div class="amount-label">Amount due</div>
+        <div class="amount" id="amountDisplay">₹2,960</div>
+      </div>
+      <div class="details">
+        <div class="detail"><span>Customer</span><strong id="customerDisplay">TiVo app</strong></div>
+        <div class="detail"><span>Payment method</span><strong>UPI</strong></div>
+        <div class="detail"><span>UPI ID</span><strong><span id="upiDisplay">BHARATPE2G0I0J7J7V72281@unitype</span> <button class="copy" id="copyUpi" type="button">Copy</button></strong></div>
+      </div>
+      <div class="section-title">Choose your UPI app</div>
+      <div class="payment-options" aria-label="Choose a payment app">
+        <button class="payment-option" type="button" data-package="net.one97.paytm">Paytm<span>Pay securely</span></button>
+        <button class="payment-option" type="button" data-package="com.phonepe.app">PhonePe<span>Pay securely</span></button>
+        <button class="payment-option" type="button" data-package="com.google.android.apps.nbu.paisa.user">Google Pay<span>Pay securely</span></button>
+      </div>
+      <button class="pay" id="otherUpiButton" type="button">Other UPI app</button>
+      <div id="toast" role="status" aria-live="polite"></div>
+      <div class="section-title">Submit payment UTR</div>
+      <label class="field">UPI transaction reference / UTR
+        <input id="utrInput" type="text" inputmode="numeric" maxlength="12" pattern="[0-9]{12}" placeholder="Enter 12-digit UTR" autocomplete="off">
+      </label>
+      <button class="secondary-button" id="utrButton" type="button">Submit UTR</button>
+      <p class="small-note" id="utrMessage" aria-live="polite">Enter the 12-digit UTR after completing payment.</p>
+      <div class="editor">
+        <div class="section-title">Edit payment details</div>
+        <label class="field">Customer / app name<input id="customerInput" type="text" value="TiVo app" maxlength="60"></label>
+        <label class="field">Amount (INR)<input id="amountInput" type="number" min="1" max="10000000" step="1" value="2960"></label>
+        <label class="field">UPI ID<input id="upiInput" type="text" value="BHARATPE2G0I0J7J7V72281@unitype" maxlength="100"></label>
+        <button class="secondary-button" id="saveDetails" type="button">Update payment details</button>
+        <p class="small-note">Changes apply to this page preview only and are not saved to a public payment link.</p>
+      </div>
+      <div class="notice">Before paying, verify the recipient name and amount shown in your UPI app. This preview is not an official bank or UPI page.</div>
+    </section>
+    <p class="note">Auto Loan is a selectable page option only. Switching it does not authorize a payment or change the amount due.</p>
+  </div>
+</main>
+<section id="utrSuccessScreen" role="status" aria-live="polite">
+  <div class="success-icon">✓</div>
+  <h1>UTR Submitted Successfully</h1>
+  <p>Your 12-digit UTR has been submitted.</p>
+</section>
+<script>
+const toggle = document.getElementById('autoLoan');
+const hint = document.getElementById('autoHint');
+const state = document.getElementById('stateText');
+const toast = document.getElementById('toast');
+let upi = 'BHARATPE2G0I0J7J7V72281@unitype';
+let customer = 'TiVo app';
+let amount = 2960;
+toggle.addEventListener('change', () => {
+  const enabled = toggle.checked;
+  hint.textContent = enabled ? 'Auto Loan option is ON' : 'Auto Loan option is OFF';
+  state.textContent = enabled ? 'ON' : 'OFF';
+});
+document.getElementById('copyUpi').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(upi); toast.textContent = 'UPI ID copied.'; }
+  catch { toast.textContent = 'Please copy the UPI ID manually: ' + upi; }
+});
+function buildUpiUrl() {
+  return 'upi://pay?pa=' + encodeURIComponent(upi) +
+    '&pn=' + encodeURIComponent(customer) +
+    '&am=' + encodeURIComponent(amount) +
+    '&cu=INR&tn=' + encodeURIComponent('Loan repayment');
+}
+document.querySelectorAll('.payment-option').forEach((button) => {
+  button.addEventListener('click', () => {
+    const packageName = button.dataset.package;
+    const params = buildUpiUrl().replace(/^upi:\/\//, '');
+    const intentUrl = 'intent://' + params +
+      '#Intent;scheme=upi;package=' + packageName +
+      ';S.browser_fallback_url=' + encodeURIComponent(buildUpiUrl()) +
+      ';end';
+    toast.textContent = 'Opening ' + button.childNodes[0].textContent.trim() + '…';
+    window.location.href = intentUrl;
+  });
+});
+document.getElementById('otherUpiButton').addEventListener('click', () => {
+  window.location.href = buildUpiUrl();
+});
+document.getElementById('saveDetails').addEventListener('click', () => {
+  const nextCustomer = document.getElementById('customerInput').value.trim();
+  const nextAmount = Number(document.getElementById('amountInput').value);
+  const nextUpi = document.getElementById('upiInput').value.trim();
+  if (!nextCustomer || !Number.isFinite(nextAmount) || nextAmount <= 0 || !/^[^\s@]+@[^\s@]+$/.test(nextUpi)) {
+    toast.textContent = 'Please enter a valid name, amount and UPI ID.';
+    return;
+  }
+  customer = nextCustomer;
+  amount = nextAmount;
+  upi = nextUpi;
+  document.getElementById('customerDisplay').textContent = customer;
+  document.getElementById('amountDisplay').textContent = '₹' + amount.toLocaleString('en-IN');
+  document.getElementById('upiDisplay').textContent = upi;
+  toast.textContent = 'Payment details updated in this preview.';
+});
+const utrInput = document.getElementById('utrInput');
+const utrMessage = document.getElementById('utrMessage');
+utrInput.addEventListener('input', () => {
+  utrInput.value = utrInput.value.replace(/\D/g, '').slice(0, 12);
+  utrMessage.className = '';
+  utrMessage.textContent = 'Enter the 12-digit UTR after completing payment.';
+});
+document.getElementById('utrButton').addEventListener('click', () => {
+  const utr = utrInput.value.trim();
+  if (!/^\d{12}$/.test(utr)) {
+    utrMessage.className = 'error';
+    utrMessage.textContent = 'Please enter exactly 12 digits.';
+    return;
+  }
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('utrSuccessScreen').style.display = 'flex';
+});
+</script>
+
+<!--sites-preview-theme:start-->
+<style data-sites-preview-theme>:root{--site-primary:#d25e28 !important;--site-on-primary:#000000 !important;--site-secondary:#d25e28 !important;--site-on-secondary:#000000 !important}</style>
+<script type="application/json" data-sites-preview-theme>{"appearance":"custom","primary":"#d25e28","secondary":"#d25e28","background":"#f3f6fc","typography":"original","spacing":1,"roundness":1,"headingScale":1,"decorationOpacity":null}</script>
+<!--sites-preview-theme:end-->
+</body>
+</html>
